@@ -60,18 +60,31 @@ body, html {
   color: black; /* Set input text color to black */
 }
 
-#cr {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+/* Centering the buttons on the page */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
 }
 
-button:hover {
-  background-color: #45a049;
+/* Styling for the button */
+#cr {
+    padding: 10px 20px;
+    background-color: #4CAF51; /* Original background color */
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px; /* Add some space between buttons if there are multiple */
 }
+
+/* Hover effect for the button */
+#cr:hover {
+    background-color: #007BFF; /* Blue color on hover */
+    color: white; /* White text on hover */
+}
+
 
 .heading {
   font-size: var(--heading-font-size); /* Use the CSS variable */

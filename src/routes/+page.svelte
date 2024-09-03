@@ -14,10 +14,10 @@
 <p class="home-ptag">Welcome to the MixRecovery19 Recipe Library</p>
 <p class="home-ptag">Go To Recipes To Search For Recipes</p>
 <p class="home-ptag">Use Member Submissions To Create and Share Your Own</p>
-<button on:click={navigateToRecipes}>
+<button id="cr" on:click={navigateToRecipes}>
     Go to Recipes
 </button>
-<button on:click={navigateToMemberSubmissions}>
+<button id="cr" on:click={navigateToMemberSubmissions}>
     Go to Member Submissions
 </button>
 

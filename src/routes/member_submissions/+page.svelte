@@ -107,7 +107,7 @@
             <td><input type="number" id="r_recipes_servings" bind:value={r_recipes_servings} required></td>
         </tr>
         <tr>
-            <td><label for="r_recipes_image">Imgage File Name:</label></td>
+            <td><label for="r_recipes_image">Image File Name:</label></td>
             <td><input type="text" id="r_recipes_image" bind:value={r_recipes_image} required></td>
         </tr>
         <tr>
