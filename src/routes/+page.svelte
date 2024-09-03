@@ -10,7 +10,9 @@
         goto('/member_submissions');
     };
 </script>
-<h1 class="text-center">Welcome to the Recipe App!</h1>
+<h1 class="text-center">MixRecovery19 Recipe Library</h1>
+<p class="home-ptag">Go To Recipes To Search For Recipes</p>
+<p class="home-ptag">Use Member Submissions To Create and Share Your Own</p>
 <button on:click={navigateToRecipes}>
     Go to Recipes
 </button>
