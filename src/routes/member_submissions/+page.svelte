@@ -17,8 +17,7 @@
     let r_recipes_cooking_time: number = 0;
     let r_recipes_servings: number = 0;
     let selectedCategory: number | null = null;
-    let r_recipes_image: string = '';
-    
+    let imageFile: File | null = null;
 
     onMount(async () => {
         const { data: categoriesData, error: categoriesError } = await supabaseClient
@@ -36,7 +35,29 @@
         }
     });
 
-    async function createRecipe() {
+    async function uploadImage() {
+        if (imageFile) {
+            const fileName = `${Date.now()}-${imageFile.name}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('recipes_images')
+                .upload(fileName, imageFile);
+
+            if (uploadError) {
+                console.error('Error uploading image:', uploadError.message);
+                return null;
+            }
+
+            
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('recipes_images')
+                .getPublicUrl(fileName);
+
+            return publicUrlData.publicUrl; 
+        }
+        return null;
+    }
+
+    async function createRecipe(imageUrl: string | null) {
         const { data, error } = await supabaseClient
             .from('Recipes')
             .insert([{
@@ -46,17 +67,19 @@
                 r_recipes_preparation_time,
                 r_recipes_cooking_time,
                 r_recipes_servings,
-                c_category_id: selectedCategory
+                c_category_id: selectedCategory,
+                r_recipes_image: imageUrl
             }])
             .single();
 
         if (error) {
-            console.error('Error inserting recipe:', error);
+            console.error('Error inserting recipe:', error.message);
             return null;
         } else {
             const recipeId = (data as { id: number })?.id;
-            console.log('Recipe created with ID:', recipeId);            
+            console.log('Recipe created with ID:', recipeId);
             
+            // Clear form fields
             r_recipes_title = '';
             r_recipes_description = '';
             r_recipes_instructions = '';
@@ -64,6 +87,8 @@
             r_recipes_cooking_time = 0;
             r_recipes_servings = 0;
             selectedCategory = null;
+            imageFile = null;
+
             return recipeId;
         }
     }
@@ -73,8 +98,18 @@
     }
 
     async function handleSubmit() {
-        await createRecipe();  
-        goto('/member_submissions/recipe_ingredients');
+        const imageUrl = await uploadImage();
+        if (imageUrl) {
+            await createRecipe(imageUrl);
+            goto('/member_submissions/recipe_ingredients');
+        } else {
+            console.error('Image upload failed, recipe not created.');
+        }
+    }
+
+    function handleFileChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        imageFile = target.files ? target.files[0] : null;
     }
 </script>
 
@@ -107,8 +142,8 @@
             <td><input type="number" id="r_recipes_servings" bind:value={r_recipes_servings} required></td>
         </tr>
         <tr>
-            <td><label for="r_recipes_image">Image File Name:</label></td>
-            <td><input type="text" id="r_recipes_image" bind:value={r_recipes_image} required></td>
+            <td><label for="r_recipes_image">Upload Image:</label></td>
+            <td><input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange} required></td>
         </tr>
         <tr>
             <td><label for="category">Category</label></td>

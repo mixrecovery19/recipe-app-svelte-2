@@ -1,5 +1,5 @@
 <script lang="ts">
-	let theme:string = 'light'; // Set to 'dark' for dark mode
+	let theme:string = 'light'; // 'light' or 'dark'
 	import '../app.postcss';
 
 	// Highlight JS

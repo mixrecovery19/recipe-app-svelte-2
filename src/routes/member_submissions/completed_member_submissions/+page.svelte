@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
-    import { onMount } from "svelte";
+	import { onMount } from "svelte";
     import { createClient } from '@supabase/supabase-js';
     import '../../../app.postcss';
     import { goto } from '$app/navigation';    
