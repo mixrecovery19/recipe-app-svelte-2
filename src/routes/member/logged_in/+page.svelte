@@ -11,7 +11,7 @@
     let password = '';
     let loginError = '';
     let successMessage = '';
-    let userId = '';  // Store authenticated user's id here
+    let userId = '';  
 
     let showMemberForm = false;    
     let m_member_first_name = '';
@@ -26,7 +26,6 @@
     let m_member_country = '';
     let m_member_contact_number = '';
 
-    // Fetch user data when the component is mounted
     onMount(async () => {
         const { data: user, error: userError } = await supabaseClient.auth.getUser();
 
@@ -36,11 +35,10 @@
         }
 
         if (user?.user?.id) {
-            userId = user.user.id;  // Store the authenticated user's ID
-            email = user.user.email ?? '';  // Use the user's email if available
+            userId = user.user.id;  
+            email = user.user.email ?? '';  
         }
-
-        // Optionally fetch member data for this user if they exist
+        
         const { data: memberData, error: memberError } = await supabaseClient
             .from('Member')
             .select('*')
@@ -49,7 +47,7 @@
         if (memberError) {
             loginError = 'Error fetching member details.';
         } else if (memberData?.length > 0) {
-            // If member data exists, you can pre-fill the form (optional)
+            
             const member = memberData[0];
             m_member_first_name = member.m_member_first_name;
             m_member_last_name = member.m_member_last_name;
@@ -64,14 +62,13 @@
             m_member_contact_number = member.m_member_contact_number;
         }
     });
-
-    // Function to submit or update member details
+    
     const submitMemberDetails = async () => {
         const { error } = await supabaseClient
             .from('Member')
-            .upsert([  // Using upsert to update if record exists, otherwise insert
+            .insert([  
                 {                    
-                    m_user_id: userId,  // Associate this member with the authenticated user
+                    m_user_id: userId,  
                     m_member_first_name,
                     m_member_last_name,
                     m_member_username,
@@ -85,7 +82,7 @@
                     m_member_country,
                     m_member_contact_number
                 }
-            ], { onConflict: 'm_user_id' });  // Prevent duplicate user entries
+            ]);  
 
         if (error) {
             loginError = error.message;
@@ -95,8 +92,7 @@
             showMemberForm = false;
         }
     };
-
-    // Show form for updating member details
+    
     function updateMemberDetails() {
         showMemberForm = true;
     }
@@ -108,13 +104,14 @@
 
 <main>
     <h1>Logged In Members</h1>
+    
+    <button id="cr" type="button" on:click={() => goto('/recipes')}>SEARCH RECIPES</button>
+    <button id="cr" on:click={navigateToMemberSubmissions}>MEMBER SUBMISSIONS</button>
+     
     <button id="cr" type="button" on:click={updateMemberDetails}>UPDATE DETAILS</button>
-    <button id="cr" type="button" on:click={() => goto('/')}>MEMBER HOME</button>
-    <button id="cr" on:click={navigateToMemberSubmissions}>
-        Go to Member Submissions
-    </button>
+    
     {#if showMemberForm}
-        <!-- Member Details Form -->
+        
         <h2>Fill in your details</h2>
 
         <div>
@@ -131,10 +128,41 @@
             <label for="username">Username:</label>
             <input type="text" id="username" bind:value={m_member_username} placeholder="Enter your username" />
         </div>
+        <div>
+            <label for="street_number">Street Number:</label>
+            <input type="text" id="street_number" bind:value={m_member_street_number} placeholder="Enter your street number" />
+        </div>
+        <div>
+            <label for="street_name">Street Name:</label>
+            <input type="text" id="street_name" bind:value={m_member_street_name} placeholder="Enter your street name" />
+        </div>
+        <div>
+            <label for="street_type">Street Type:</label>
+            <input type="text" id="street_type" bind:value={m_member_street_type} placeholder="Enter your street type" />
+        </div>
+        <div>
+            <label for="suburb">Suburb:</label>
+            <input type="text" id="suburb" bind:value={m_member_suburb} placeholder="Enter your suburb" />
+        </div>
+        <div>
+            <label for="state">State:</label>
+            <input type="text" id="state" bind:value={m_member_state} placeholder="Enter your state" />
+        </div>
+        <div>
+            <label for="post_code">Post Code:</label>
+            <input type="text" id="post_code" bind:value={m_member_post_code} placeholder="Enter your post code" />
+        </div>
+        <div>
+            <label for="country">Country:</label>
+            <input type="text" id="country" bind:value={m_member_country} placeholder="Enter your country" />
+        </div>
+        <div>
+            <label for="contact_number">Contact Number:</label>
+            <input type="text" id="contact_number" bind:value={m_member_contact_number} placeholder="Enter your contact number" />
+        </div>        
 
-        <!-- Add more fields as needed -->
+        <button id="cr" on:click={submitMemberDetails}>Submit Member Details</button>
 
-        <button on:click={submitMemberDetails}>Submit Member Details</button>
     {/if}
 
     {#if successMessage}

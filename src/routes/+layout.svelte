@@ -1,5 +1,5 @@
 
-<h1 class="layout_heading">MixRecovery19 Recipes</h1>
+<h1 class="layout_heading">MixRecovery19</h1>
 
 
 
