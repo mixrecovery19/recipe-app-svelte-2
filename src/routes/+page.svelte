@@ -5,9 +5,7 @@
     function navigateToRecipes() {
         goto('/recipes');
     }
-    function navigateToMemberSubmissions() {
-        goto('/member_submissions');
-    };
+    
     function navigateToMember() {
         goto('/member');
     };
@@ -22,9 +20,7 @@
 <button id="cr" on:click={navigateToRecipes}>
     Go to Recipes
 </button>
-<button id="cr" on:click={navigateToMemberSubmissions}>
-    Go to Member Submissions
-</button>
+
 <button id="cr" on:click={navigateToMember}>
     Login/Sign-Up
 </button>

@@ -100,13 +100,19 @@
     function updateMemberDetails() {
         showMemberForm = true;
     }
+    function navigateToMemberSubmissions() {
+        goto('/member_submissions');
+    };
 
 </script>
 
 <main>
     <h1>Logged In Members</h1>
     <button id="cr" type="button" on:click={updateMemberDetails}>UPDATE DETAILS</button>
-
+    <button id="cr" type="button" on:click={() => goto('/')}>MEMBER HOME</button>
+    <button id="cr" on:click={navigateToMemberSubmissions}>
+        Go to Member Submissions
+    </button>
     {#if showMemberForm}
         <!-- Member Details Form -->
         <h2>Fill in your details</h2>
