@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+    import { onMount } from "svelte";
     import { createClient } from '@supabase/supabase-js';
     import '../../../app.postcss';
     import { goto } from '$app/navigation';    
@@ -11,8 +11,10 @@
     let recipe_id: number = 0;
     let recipe: any = null;
     let recipeIngredients: any[] = [];
+    let dietaryRequirements: any[] = []; // Array to store dietary requirements
 
     onMount(async () => {        
+        // Fetch the latest recipe ID
         const { data: latestRecipeData, error: latestRecipeError } = await supabaseClient
             .from('Recipes')
             .select('r_recipes_id')
@@ -33,6 +35,7 @@
             return;
         }
         
+        // Fetch recipe details
         const { data: recipeData, error: recipeError } = await supabaseClient
             .from('Recipes')
             .select('*')
@@ -46,6 +49,7 @@
             console.log('Recipe:', recipe);
         }
         
+        // Fetch ingredients
         const { data: ingredientsData, error: ingredientsError } = await supabaseClient
             .from('recipe_ingredients')
             .select('*')
@@ -61,13 +65,42 @@
             );
             console.log('Ingredients:', recipeIngredients);
         }
+
+        // Fetch dietary requirements for the recipe
+        const { data: recipeDietaryRequirements, error: recipeDietaryRequirementsError } = await supabaseClient
+            .from('Recipe_Dietary_Requirements')
+            .select('dietary_requirement_id')
+            .eq('recipe_id', recipe_id);
+
+        if (recipeDietaryRequirementsError) {
+            console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
+            return;
+        }
+
+        if (recipeDietaryRequirements) {
+            const dietaryRequirementIds = recipeDietaryRequirements.map(req => req.dietary_requirement_id);
+
+            const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
+                .from('Dietary Requirements')
+                .select('*')
+                .in('dr_dietary_requirements_id', dietaryRequirementIds);
+
+            if (dietaryRequirementsError) {
+                console.error('Error fetching dietary requirements:', dietaryRequirementsError);
+            } else {
+                dietaryRequirements = dietaryRequirementsData;
+                console.log('Dietary Requirements:', dietaryRequirements);
+            }
+        }
     });
 </script>
+
 <header>
     <h1>Recipe Details</h1>
     <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
     <button id="cr" type="button" on:click={() => goto('/')}>HOME</button> 
 </header>
+
 <h1 class="heading">Recipe Details</h1>
 
 {#if recipe}
@@ -88,7 +121,19 @@
         <p><strong>Cooking Time:</strong> {recipe.r_recipes_cooking_time} mins</p>
         <p><strong>Servings:</strong> {recipe.r_recipes_servings}</p>
         <p><strong>Category ID:</strong> {recipe.c_category_id}</p>
-        
+
+        <p><strong>Dietary Requirements:</strong>
+            {#if dietaryRequirements.length > 0}
+                <ul>
+                    {#each dietaryRequirements as requirement}
+                        <li>{requirement.dr_dietary_requirements_name}</li>
+                    {/each}
+                </ul>
+            {:else}
+                <p>No dietary requirements found for this recipe.</p>
+            {/if}
+        </p>
+
         <h3 class="heading">Ingredients</h3>
         {#if recipeIngredients.length > 0}
             <ul>
