@@ -1,3 +1,8 @@
+
+<h1 class="layout_heading">MixRecovery19 Recipes</h1>
+
+
+
 <script lang="ts">
 	let theme:string = 'light'; // 'light' or 'dark'
 	import '../app.postcss';
@@ -26,3 +31,4 @@
 </script>
 
 <slot />
+
