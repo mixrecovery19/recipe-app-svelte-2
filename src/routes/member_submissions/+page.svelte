@@ -16,10 +16,8 @@
     let r_recipes_preparation_time: number = 0;
     let r_recipes_cooking_time: number = 0;
     let r_recipes_servings: number = 0;
-    let selectedCategory: number | null = null;
-    let selectedDietaryRequirement: number[] = [];
-    let imageFile: File | null = null;
-    let dietaryRequirements: any[] = [];
+    let selectedCategory: number | null = null;    
+    let imageFile: File | null = null;   
 
     
     onMount(async () => {
@@ -36,29 +34,8 @@
                 return map;
             }, {});
         }
-    });
+    });  
     
-    onMount(async () => {
-        const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
-            .from('Dietary Requirements')
-            .select('*');
-
-        if (dietaryRequirementsError) {
-            console.error('Error fetching dietary requirements:', dietaryRequirementsError);
-        } else {
-            dietaryRequirements = dietaryRequirementsData;
-            console.log('Dietary Requirements fetched:', dietaryRequirements); 
-        }
-    });
-    async function fetchRecipeDietaryRequirements() {
-        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe Dietary Requirements')
-            .select('*');
-        console.log('Recipe Dietary Requirements fetched:', recipeDietaryRequirementsData);
-    }
-    
-    fetchRecipeDietaryRequirements();
-
     async function uploadImage() {
         if (imageFile) {
             const fileName = `${Date.now()}-${imageFile.name}`;
@@ -100,23 +77,21 @@
             return null;
         } else {
             const recipeId = (data as { id: number })?.id;
-            console.log('Recipe created with ID:', recipeId);            
+            console.log('Recipe created with ID:', recipeId);          
             
-            if (recipeId && selectedDietaryRequirement.length > 0) {
-                const dietaryRequirementsInserts = selectedDietaryRequirement.map(dietaryRequirementId => ({
-                    recipe_id: recipeId,
-                    dietary_requirement_id: dietaryRequirementId
-                }));
-                
-                const { error: dietaryRequirementsError } = await supabaseClient
-                    .from('Recipe Dietary Requirements')
-                    .insert(dietaryRequirementsInserts);
+            if (recipeId) {
+                const { data: recipeData, error: recipeError } = await supabaseClient
+                    .from('Recipes')
+                    .select('*')
+                    .eq('r_recipes_id', recipeId)
+                    .single();
 
-                if (dietaryRequirementsError) {
-                    console.error('Error inserting dietary requirements:', dietaryRequirementsError.message);
-                }
-            }
-
+                if (recipeError) {
+                    console.error('Error fetching recipe:', recipeError);
+                } else {
+                    console.log('Recipe fetched:', recipeData);
+                }                            
+              }
             // Clear form fields
             r_recipes_title = '';
             r_recipes_description = '';
@@ -126,8 +101,7 @@
             r_recipes_servings = 0;
             selectedCategory = null;
             imageFile = null;
-            selectedDietaryRequirement = [];
-
+            
             return recipeId;
         }
     }
@@ -135,15 +109,7 @@
     function selectCategory(categoryId: number) {
         selectedCategory = categoryId;
     }
-
-    function toggleDietaryRequirement(dietaryRequirementId: number) {
-        if (selectedDietaryRequirement.includes(dietaryRequirementId)) {
-            selectedDietaryRequirement = selectedDietaryRequirement.filter(id => id !== dietaryRequirementId);
-        } else {
-            selectedDietaryRequirement = [...selectedDietaryRequirement, dietaryRequirementId];
-        }
-    }
-
+    
     async function handleSubmit() {
         const imageUrl = imageFile ? await uploadImage() : null;
         const recipeId = await createRecipe(imageUrl);
@@ -191,7 +157,7 @@
         </tr>
         <tr>
             <td><label for="r_recipes_image">Upload Image (Optional):</label></td>
-            <td><input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange}></td>
+            
         </tr>
         <tr>
             <td><label for="category">Category</label></td>
@@ -211,25 +177,7 @@
                     {/each}
                 </div>
             </td>
-        </tr>
-        <tr>
-            <td><label for="dietary_requirements">Dietary Requirements</label></td>            
-            <td>
-                <div class="dietary-requirements-container">
-                    {#each dietaryRequirements as dietaryRequirement}
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="dietary_requirements"
-                                value={dietaryRequirement.dr_dietary_requirements_id}
-                                on:change={() => toggleDietaryRequirement(dietaryRequirement.dr_dietary_requirements_id)}
-                            />
-                            {dietaryRequirement.dr_dietary_requirements_name}
-                        </label>
-                    {/each}
-                </div>
-            </td>
-        </tr>
+        </tr>       
         <tr>
             <td colspan="2">
                 <button id="cr" type="submit">

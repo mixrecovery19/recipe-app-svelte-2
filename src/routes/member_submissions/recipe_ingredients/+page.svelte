@@ -20,7 +20,10 @@
         let r_recipes_preparation_time: number = 0;
         let r_recipes_cooking_time: number = 0;
         let r_recipes_servings: number = 0;
-        let selectedCategory: number | null = null;    
+        let selectedCategory: number | null = null; 
+        let selectedDietaryRequirement: number[] = [];
+        let dietaryRequirements: any[] = [];
+          
 
     onMount(async () => {
 
@@ -71,6 +74,7 @@
             console.log('recipe_ingredients:', recipeIngredients);  // bug fix...if database drops out
         }
     });
+    
 
     async function handleRecipeSubmission() {
     try {        
@@ -122,26 +126,57 @@
     }
 }
 
-async function addRecipeIngredientsData(event: MouseEvent) {
-    try {
-        const ingredient = recipeIngredients[0];
-        const { data, error } = await supabaseClient
-            .from('recipe_ingredients')
-            .insert([
+onMount(() => {
+        fetchDietaryRequirements();
+        fetchRecipeDietaryRequirements();
+});
+async function fetchDietaryRequirements() {
+        const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
+            .from('Dietary Requirements')
+            .select('*');
+        console.log('Dietary Requirements fetched:', dietaryRequirementsData);
+
+        if (dietaryRequirementsError) {
+            console.error('Error fetching dietary requirements:', dietaryRequirementsError);
+        } else {
+            dietaryRequirements = dietaryRequirementsData;
+            console.log('Dietary Requirements fetched:', dietaryRequirements); 
+        }
+    }
+    function toggleDietaryRequirement(dietaryRequirementId: number) {
+        if (selectedDietaryRequirement.includes(dietaryRequirementId)) {
+            selectedDietaryRequirement = selectedDietaryRequirement.filter(id => id !== dietaryRequirementId);
+        } else {
+            selectedDietaryRequirement = [...selectedDietaryRequirement, dietaryRequirementId];
+        }
+    }
+    
+    async function fetchRecipeDietaryRequirements() {
+        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+            .from('Recipe Dietary Requirements')
+            .select('*');
+        console.log('Recipe Dietary Requirements fetched:', recipeDietaryRequirementsData);
+    }   
+    
+    async function addRecipeIngredientsData(event: MouseEvent) {
+         try {
+             const ingredient = recipeIngredients[0];
+             const { data, error } = await supabaseClient
+                .from('recipe_ingredients')
+                .insert([
                 {
                     r_recipes_id: r_recipes_id,  
                     ri_recipe_ingredients_name: ingredient.name,
                     ri_recipe_ingredients_quantity: ingredient.quantity,
                     ri_recipe_ingredients_unit: ingredient.unit,                        
-                },
-            ]);
+                     },
+                ]);
 
         if (error) {
             console.error('Error inserting ingredient:', error);
         } else {
             console.log('Inserted ingredient:', data);            
             recipeIngredients = [...recipeIngredients, { name: '', quantity: '', unit: ''}];
-
             ingredient.name = '';
             ingredient.quantity = '';
             ingredient.unit = '';
@@ -150,8 +185,36 @@ async function addRecipeIngredientsData(event: MouseEvent) {
         console.error('Unexpected error:', error);
     }
 }
+async function addRecipeDietaryRequirementsData(event: MouseEvent) {
+    try {        
+        if (!r_recipes_id) {
+            throw new Error('Recipe ID is not set.');
+        }        
+        for (const dr_id of selectedDietaryRequirement) {
+            const { data, error } = await supabaseClient
+                .from('Recipe Dietary Requirements')
+                .insert([
+                    {
+                        r_recipes_id: r_recipes_id, 
+                        dr_dietary_requirements_id: dr_id, 
+                    },
+                ]);
 
-</script>
+            if (error) {
+                console.error('Error inserting dietary requirement:', error);
+            } else {
+                console.log('Inserted dietary requirement:', data);
+            }
+        }        
+        alert('Dietary requirements submitted successfully!');
+        selectedDietaryRequirement = []; 
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        alert('There was an error submitting the dietary requirements.');
+    }
+}
+
+</script>      
 
 <form class="table-wrap" method="POST">
     <table class="table">
@@ -207,6 +270,12 @@ async function addRecipeIngredientsData(event: MouseEvent) {
 
 <form class="table-wrap">
     <table class="table">
+        <colgroup>
+            <col class="col-ingredient">
+            <col class="col-quantity">
+            <col class="col-unit">
+            <col class="col-add">
+        </colgroup>
         <tbody>        
             <tr>
                 <th class="heading">Ingredient Name</th>
@@ -223,19 +292,32 @@ async function addRecipeIngredientsData(event: MouseEvent) {
                     <td><button type="button" on:click={addRecipeIngredientsData}>ADD</button></td>
                 </tr>
             {/if}
+            
+            <tr>
+                <td><label for="dietary_requirements">Dietary Requirements</label></td>            
+                <td>
+                    <div class="dietary-requirements-container">
+                        {#each dietaryRequirements as dietaryRequirement}
+                            <label class="dietary-checkbox">
+                                <input
+                                    type="checkbox"
+                                    name="dietary_requirements"
+                                    value={dietaryRequirement.dr_dietary_requirements_id}
+                                    on:change={() => toggleDietaryRequirement(dietaryRequirement.dr_dietary_requirements_id)}
+                                />
+                                {dietaryRequirement.dr_dietary_requirements_name}
+                            </label>
+                        {/each}
+                    </div>
+                </td>
+            </tr>
         </tbody>
-        </table>        
-        <p>Click the ADD INGEDIENTS until you have entered your ingredients. When you are happy with your recipe press SUBMIT RECIPE</p>               
-            
-        <button id="cr" type="button" on:click={addRecipeIngredientsData}>ADD INGREDIENTS</button>              
-        <button id="cr" type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>                
-            
-        <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>CANCEL</button>        
-</form>                           
-           
+    </table>
+    
+    <p>Click ADD INGREDIENTS until you have entered all ingredients. When you're happy with your recipe, press SUBMIT RECIPE.</p>
+    <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>
+    <button type="button" on:click={addRecipeIngredientsData}>ADD INGREDIENTS</button>              
+    <button type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
+    <button type="button" on:click={() => goto('/member_submissions/')}>CANCEL</button>        
+</form>
 
-            
-                    
-            
-        
-        
