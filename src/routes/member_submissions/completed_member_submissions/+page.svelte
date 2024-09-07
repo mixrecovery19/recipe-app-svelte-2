@@ -11,10 +11,10 @@
     let recipe_id: number = 0;
     let recipe: any = null;
     let recipeIngredients: any[] = [];
-    let dietaryRequirements: any[] = []; // Array to store dietary requirements
+    let dietaryRequirements: any[] = []; 
 
-    onMount(async () => {        
-        // Fetch the latest recipe ID
+    onMount(async () => {      
+        
         const { data: latestRecipeData, error: latestRecipeError } = await supabaseClient
             .from('Recipes')
             .select('r_recipes_id')
@@ -33,9 +33,8 @@
         } else {
             console.error('No recipes found.');
             return;
-        }
+        }        
         
-        // Fetch recipe details
         const { data: recipeData, error: recipeError } = await supabaseClient
             .from('Recipes')
             .select('*')
@@ -47,9 +46,8 @@
         } else {
             recipe = recipeData;
             console.log('Recipe:', recipe);
-        }
+        }        
         
-        // Fetch ingredients
         const { data: ingredientsData, error: ingredientsError } = await supabaseClient
             .from('recipe_ingredients')
             .select('*')
@@ -65,7 +63,6 @@
             );
             console.log('Ingredients:', recipeIngredients);
         }
-
         // Fetch dietary requirements for the recipe
         const { data: recipeDietaryRequirements, error: recipeDietaryRequirementsError } = await supabaseClient
             .from('Recipe_Dietary_Requirements')
