@@ -157,7 +157,9 @@
         </tr>
         <tr>
             <td><label for="r_recipes_image">Upload Image (Optional):</label></td>
-            
+            <td><input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange}></td> 
+            <button type="button" on:click={uploadImage}>Upload Image</button>
+            <button type="button" on:click={() => imageFile = null}>Clear Image</button>          
         </tr>
         <tr>
             <td><label for="category">Category</label></td>

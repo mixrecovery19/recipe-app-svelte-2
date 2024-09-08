@@ -23,6 +23,7 @@
         let selectedCategory: number | null = null; 
         let selectedDietaryRequirement: number[] = [];
         let dietaryRequirements: any[] = [];
+        let imageFile: File | null = null;
           
 
     onMount(async () => {
@@ -211,6 +212,37 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
     }
 }
 
+    function handleFileChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        imageFile = target.files ? target.files[0] : null;
+    } 
+    function handleFileInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      imageFile = target.files[0]; 
+    }
+  }
+  
+  async function uploadImage() {
+    if (!imageFile) {
+      alert("Please select an image file first.");
+      return;
+    }
+
+    const fileName = `${Date.now()}_${imageFile.name}`; 
+    const { data, error } = await supabaseClient.storage
+      .from('recipes_images') 
+      .upload(fileName, imageFile);
+
+    if (error) {
+      console.error('Error uploading image:', error.message);
+      alert('Failed to upload image.');
+    } else {
+      console.log('Image uploaded successfully:', data);
+      alert('Image uploaded successfully.');
+    }
+  }
+
 </script>      
 
 <form class="table-wrap" method="POST">
@@ -307,6 +339,12 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
                         {/each}
                     </div>
                 </td>
+            </tr>
+            <tr>
+                <td><label for="r_recipes_image">Upload Image (Optional):</label></td>
+                <td><input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange}></td>
+                <button type="button" on:click={uploadImage}>Upload Image</button>
+                <button type="button" on:submit={uploadImage}>Image</button>          
             </tr>
         </tbody>
     </table>
