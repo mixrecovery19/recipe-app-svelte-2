@@ -12,8 +12,9 @@
     let recipe: any = null;
     let recipeIngredients: any[] = [];
     let dietaryRequirements: any[] = []; 
+    let selectedDietaryRequirementsData: any[] = [];
 
-    onMount(async () => {      
+    onMount(async () => {    
         
         const { data: latestRecipeData, error: latestRecipeError } = await supabaseClient
             .from('Recipes')
@@ -33,8 +34,8 @@
         } else {
             console.error('No recipes found.');
             return;
-        }        
-        
+        }      
+                
         const { data: recipeData, error: recipeError } = await supabaseClient
             .from('Recipes')
             .select('*')
@@ -46,7 +47,8 @@
         } else {
             recipe = recipeData;
             console.log('Recipe:', recipe);
-        }        
+        }    
+       
         
         const { data: ingredientsData, error: ingredientsError } = await supabaseClient
             .from('recipe_ingredients')
@@ -62,47 +64,50 @@
                 ingredient.ri_recipe_ingredients_unit
             );
             console.log('Ingredients:', recipeIngredients);
-        }
-        // Fetch dietary requirements for the recipe
-        const { data: recipeDietaryRequirements, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe_Dietary_Requirements')
-            .select('dietary_requirement_id')
-            .eq('recipe_id', recipe_id);
-
+        }        
+        await fetchRecipeDietaryRequirements();
+    });
+    
+    async function fetchRecipeDietaryRequirements() {        
+        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+            .from('Recipe Dietary Requirements')
+            .select('dr_dietary_requirements_id')
+            .eq('r_recipes_id', recipe_id);
+        
         if (recipeDietaryRequirementsError) {
             console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
-            return;
-        }
-
-        if (recipeDietaryRequirements) {
-            const dietaryRequirementIds = recipeDietaryRequirements.map(req => req.dietary_requirement_id);
-
+        } else if (recipeDietaryRequirementsData.length > 0) {
+            const dietaryRequirementIds = recipeDietaryRequirementsData.map(item => item.dr_dietary_requirements_id);
+            console.log('Dietary Requirement IDs for this recipe:', dietaryRequirementIds);
+            
             const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
                 .from('Dietary Requirements')
-                .select('*')
+                .select('dr_dietary_requirements_name')
                 .in('dr_dietary_requirements_id', dietaryRequirementIds);
 
             if (dietaryRequirementsError) {
-                console.error('Error fetching dietary requirements:', dietaryRequirementsError);
+                console.error('Error fetching dietary requirement names:', dietaryRequirementsError);
             } else {
-                dietaryRequirements = dietaryRequirementsData;
-                console.log('Dietary Requirements:', dietaryRequirements);
+                selectedDietaryRequirementsData = dietaryRequirementsData;
+                console.log('Dietary requirement names for this recipe:', selectedDietaryRequirementsData);
             }
+        } else {
+            console.log('No dietary requirements associated with this recipe.');
         }
-    });
+    }
 </script>
 
-<header>
-    <h1>Recipe Details</h1>
+<header>    
     <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
     <button id="cr" type="button" on:click={() => goto('/')}>HOME</button> 
+    <button id="cr" type="button" on:click={() => goto('/recipes/')}>SEARCH RECIPES</button>
 </header>
 
 <h1 class="heading">Recipe Details</h1>
 
 {#if recipe}
     <div>
-        <h2>{recipe.r_recipes_title}</h2>
+        <h2 class="heading">{recipe.r_recipes_title}</h2>
 
         {#if recipe.r_recipes_image}
         <img 
@@ -120,9 +125,9 @@
         <p><strong>Category ID:</strong> {recipe.c_category_id}</p>
 
         <p><strong>Dietary Requirements:</strong>
-            {#if dietaryRequirements.length > 0}
+            {#if selectedDietaryRequirementsData.length > 0}
                 <ul>
-                    {#each dietaryRequirements as requirement}
+                    {#each selectedDietaryRequirementsData as requirement}
                         <li>{requirement.dr_dietary_requirements_name}</li>
                     {/each}
                 </ul>

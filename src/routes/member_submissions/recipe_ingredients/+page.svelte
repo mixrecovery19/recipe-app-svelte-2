@@ -60,7 +60,7 @@
                 map[category.c_category_id] = category.c_category_name;
                 return map;
             }, {});
-            console.log('Categories:', Categories);  // bug fix...if database drops out
+            
         }
 
         const { data: recipeIngredientsData, error: recipeIngredientsError } = await supabaseClient
@@ -71,10 +71,9 @@
             console.error('Error fetching recipe ingredients:', recipeIngredientsError);
         } else {
             recipeIngredients = recipeIngredientsData;
-            console.log('recipe_ingredients:', recipeIngredients);  // bug fix...if database drops out
+            
         }
-    });
-    
+    });    
 
     async function handleRecipeSubmission() {
     try {        
@@ -134,14 +133,19 @@ async function fetchDietaryRequirements() {
         const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
             .from('Dietary Requirements')
             .select('*');
-        console.log('Dietary Requirements fetched:', dietaryRequirementsData);
-
+        
         if (dietaryRequirementsError) {
             console.error('Error fetching dietary requirements:', dietaryRequirementsError);
         } else {
             dietaryRequirements = dietaryRequirementsData;
-            console.log('Dietary Requirements fetched:', dietaryRequirements); 
         }
+    }    
+    
+    async function fetchRecipeDietaryRequirements() {
+        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+            .from('Recipe Dietary Requirements')
+            .select('*');
+       
     }
     function toggleDietaryRequirement(dietaryRequirementId: number) {
         if (selectedDietaryRequirement.includes(dietaryRequirementId)) {
@@ -150,13 +154,6 @@ async function fetchDietaryRequirements() {
             selectedDietaryRequirement = [...selectedDietaryRequirement, dietaryRequirementId];
         }
     }
-    
-    async function fetchRecipeDietaryRequirements() {
-        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe Dietary Requirements')
-            .select('*');
-        console.log('Recipe Dietary Requirements fetched:', recipeDietaryRequirementsData);
-    }   
     
     async function addRecipeIngredientsData(event: MouseEvent) {
          try {
@@ -315,8 +312,7 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
     </table>
     
     <p>Click ADD INGREDIENTS until you have entered all ingredients. When you're happy with your recipe, press SUBMIT RECIPE.</p>
-    <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>
-    <button type="button" on:click={addRecipeIngredientsData}>ADD INGREDIENTS</button>              
+    <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>               
     <button type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
     <button type="button" on:click={() => goto('/member_submissions/')}>CANCEL</button>        
 </form>
