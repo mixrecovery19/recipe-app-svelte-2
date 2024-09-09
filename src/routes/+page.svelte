@@ -13,8 +13,7 @@
     let successMessage = '';
     let userId = '';
     let username = '';    
-
-    // Function for signing up users
+    
     const signUp = async () => {
         const { data, error } = await supabaseClient.auth.signUp({
             email,
@@ -27,14 +26,12 @@
         } else {
             successMessage = 'Signed up successfully, please verify your email.';
             loginError = '';
-            userId = data.user?.id ?? '';            
-            
-            // Create member record after successful signup
+            userId = data.user?.id ?? '';          
+                       
             await createMemberRecord(userId, username);
         }
     };
-
-    // Function for logging in users
+    
     const login = async () => {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
@@ -47,25 +44,21 @@
             loginError = '';
             successMessage = 'Logged in successfully!';
             userId = data.user?.id ?? '';
-
-            // Check if the member record already exists
+            
             const { data: memberData, error: memberError } = await supabaseClient
                 .from('Member')
                 .select('m_user_id')
                 .eq('m_user_id', userId)
                 .single();
-
-            // If no member record found, create it
+            
             if (memberError || !memberData) {
                 await createMemberRecord(userId, username);
             }
-
-            // Redirect to the logged-in page
+            
             goto('/member/logged_in');
         }
     };
-
-    // Create member record in the database
+    
     const createMemberRecord = async (userId: string, username: string) => {
         const { error } = await supabaseClient
             .from('Member')
@@ -82,8 +75,7 @@
             successMessage = 'Member record created successfully.';
         }
     };
-
-    // Function for logging out
+    
     const logout = async () => {
         const { error } = await supabaseClient.auth.signOut();
         if (error) {

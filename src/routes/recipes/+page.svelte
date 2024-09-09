@@ -61,4 +61,4 @@
 {:else}
     <p>No recipes found matching your search.</p>
 {/if}
-<button id="cr" type="button" on:click={() => goto('/')}>CANCEL</button>
+<button id="cr" type="button" on:click={() => goto('/member/logged_in')}>CANCEL</button>

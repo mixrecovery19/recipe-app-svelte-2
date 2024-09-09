@@ -352,6 +352,7 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
     <p>Click ADD INGREDIENTS until you have entered all ingredients. When you're happy with your recipe, press SUBMIT RECIPE.</p>
     <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>               
     <button type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
-    <button type="button" on:click={() => goto('/member_submissions/')}>CANCEL</button>        
+    <button type="button" on:click={() => goto('/member_submissions/')}>GO BACK</button>  
+    <button tyoe="button" on:click={() => goto('/member/logged_in')}>HOME</button>      
 </form>
 

@@ -99,7 +99,7 @@
 
 <header>    
     <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
-    <button id="cr" type="button" on:click={() => goto('/')}>HOME</button> 
+    <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
     <button id="cr" type="button" on:click={() => goto('/recipes/')}>SEARCH RECIPES</button>
 </header>
 

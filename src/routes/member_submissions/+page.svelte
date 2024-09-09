@@ -189,5 +189,5 @@
         </tr>
     </table>
 
-    <button id="cr" type="button" on:click={() => goto('/')}>CANCEL</button>
+    <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>CANCEL</button>
 </form>
