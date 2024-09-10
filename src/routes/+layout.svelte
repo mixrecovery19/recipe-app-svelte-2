@@ -2,7 +2,6 @@
 <h1 class="layout_heading">MixRecovery19</h1>
 
 
-
 <script lang="ts">
 	let theme:string = 'light'; // 'light' or 'dark'
 	import '../app.postcss';
@@ -26,7 +25,6 @@
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
-	
 
 </script>
 

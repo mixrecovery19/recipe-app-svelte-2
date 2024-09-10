@@ -1,7 +1,7 @@
 <script>
     import { goto } from '$app/navigation'; 
     import '../../app.postcss';
-  
+  //Possible delete...possibly use as a logged out/less access page
     function navigateToRecipes() {
         goto('/recipes');
     }

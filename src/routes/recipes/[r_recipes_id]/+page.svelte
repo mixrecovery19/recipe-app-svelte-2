@@ -72,7 +72,7 @@
 
         {#if recipe.r_recipes_image}
             <img 
-                src={`/images/${recipe.r_recipes_image}`} 
+                src={`${recipe.r_recipes_image}`} 
                 alt={recipe.r_recipes_title} 
                 style="max-width: 100%; height: auto;" 
             />

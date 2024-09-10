@@ -2,19 +2,19 @@
     import { onMount } from "svelte";
     import { createClient } from '@supabase/supabase-js';
     import '../../../app.postcss';
-    import { goto } from '$app/navigation';    
-
+    import { goto } from '$app/navigation';       
+    
     const supabaseURL = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const supabaseClient = createClient(supabaseURL, supabaseAnonKey);
 
     let recipe_id: number = 0;
     let recipe: any = null;
-    let recipeIngredients: any[] = [];
-    let dietaryRequirements: any[] = []; // Array to store dietary requirements
+    let recipeIngredients: any[] = [];    
+    let selectedDietaryRequirementsData: any[] = [];
 
-    onMount(async () => {        
-        // Fetch the latest recipe ID
+    onMount(async () => {    
+        
         const { data: latestRecipeData, error: latestRecipeError } = await supabaseClient
             .from('Recipes')
             .select('r_recipes_id')
@@ -33,9 +33,8 @@
         } else {
             console.error('No recipes found.');
             return;
-        }
-        
-        // Fetch recipe details
+        }      
+                
         const { data: recipeData, error: recipeError } = await supabaseClient
             .from('Recipes')
             .select('*')
@@ -47,9 +46,8 @@
         } else {
             recipe = recipeData;
             console.log('Recipe:', recipe);
-        }
-        
-        // Fetch ingredients
+        }    
+               
         const { data: ingredientsData, error: ingredientsError } = await supabaseClient
             .from('recipe_ingredients')
             .select('*')
@@ -64,52 +62,55 @@
                 ingredient.ri_recipe_ingredients_unit
             );
             console.log('Ingredients:', recipeIngredients);
-        }
-
-        // Fetch dietary requirements for the recipe
-        const { data: recipeDietaryRequirements, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe_Dietary_Requirements')
-            .select('dietary_requirement_id')
-            .eq('recipe_id', recipe_id);
-
-        if (recipeDietaryRequirementsError) {
-            console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
-            return;
-        }
-
-        if (recipeDietaryRequirements) {
-            const dietaryRequirementIds = recipeDietaryRequirements.map(req => req.dietary_requirement_id);
-
-            const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
-                .from('Dietary Requirements')
-                .select('*')
-                .in('dr_dietary_requirements_id', dietaryRequirementIds);
-
-            if (dietaryRequirementsError) {
-                console.error('Error fetching dietary requirements:', dietaryRequirementsError);
-            } else {
-                dietaryRequirements = dietaryRequirementsData;
-                console.log('Dietary Requirements:', dietaryRequirements);
-            }
-        }
+        }        
+        await fetchRecipeDietaryRequirements();
     });
+    async function fetchRecipeDietaryRequirements() {        
+    const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+        .from('Recipe Dietary Requirements')
+        .select('dr_dietary_requirements_id')
+        .eq('r_recipes_id', recipe_id);
+    
+    if (recipeDietaryRequirementsError) {
+        console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
+    } else if (recipeDietaryRequirementsData.length > 0) {
+        const dietaryRequirementIds = recipeDietaryRequirementsData.map(item => item.dr_dietary_requirements_id);
+        console.log('Dietary Requirement IDs for this recipe:', dietaryRequirementIds);
+        
+        const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
+            .from('Dietary Requirements')
+            .select('dr_dietary_requirements_name')
+            .in('dr_dietary_requirements_id', dietaryRequirementIds);
+
+        if (dietaryRequirementsError) {
+            console.error('Error fetching dietary requirement names:', dietaryRequirementsError);
+        } else {
+            selectedDietaryRequirementsData = dietaryRequirementsData;
+            console.log('Dietary requirement names for this recipe:', selectedDietaryRequirementsData);
+        }
+    } else {
+        console.log('No dietary requirements associated with this recipe.');
+    }
+}
+    
+    
 </script>
 
-<header>
-    <h1>Recipe Details</h1>
-    <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
-    <button id="cr" type="button" on:click={() => goto('/')}>HOME</button> 
+<header class="center-button">    
+    <button id="cr" type="button" on:click={() => goto('/member_submissions')}>ANOTHER SUBMISSION</button>    
+    <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
+    <button id="cr" type="button" on:click={() => goto('/recipes')}>SEARCH RECIPES</button>
 </header>
 
 <h1 class="heading">Recipe Details</h1>
 
 {#if recipe}
     <div>
-        <h2>{recipe.r_recipes_title}</h2>
+        <h2 class="heading">{recipe.r_recipes_title}</h2>
 
         {#if recipe.r_recipes_image}
         <img 
-            src={`/images/${recipe.r_recipes_image}`} 
+            src={`${recipe.r_recipes_image}`} 
             alt={recipe.r_recipes_title} 
             style="max-width: 100%; height: auto;" 
         />
@@ -123,9 +124,9 @@
         <p><strong>Category ID:</strong> {recipe.c_category_id}</p>
 
         <p><strong>Dietary Requirements:</strong>
-            {#if dietaryRequirements.length > 0}
+            {#if selectedDietaryRequirementsData.length > 0}
                 <ul>
-                    {#each dietaryRequirements as requirement}
+                    {#each selectedDietaryRequirementsData as requirement}
                         <li>{requirement.dr_dietary_requirements_name}</li>
                     {/each}
                 </ul>

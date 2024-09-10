@@ -23,7 +23,10 @@
         let selectedCategory: number | null = null; 
         let selectedDietaryRequirement: number[] = [];
         let dietaryRequirements: any[] = [];
-          
+        let imageFile: File | null = null; 
+        let recipeDietaryRequirements: any[] = [];
+        let recipeIngredientsData: any[] = [];
+        let publicURL = '';         
 
     onMount(async () => {
 
@@ -60,7 +63,7 @@
                 map[category.c_category_id] = category.c_category_name;
                 return map;
             }, {});
-            console.log('Categories:', Categories);  // bug fix...if database drops out
+            
         }
 
         const { data: recipeIngredientsData, error: recipeIngredientsError } = await supabaseClient
@@ -71,13 +74,12 @@
             console.error('Error fetching recipe ingredients:', recipeIngredientsError);
         } else {
             recipeIngredients = recipeIngredientsData;
-            console.log('recipe_ingredients:', recipeIngredients);  // bug fix...if database drops out
+            
         }
-    });
-    
+    });    
 
     async function handleRecipeSubmission() {
-    try {        
+        try {        
         const { data: recentRecipeData, error: recentRecipeError } = await supabaseClient
             .from('Recipes')
             .select('r_recipes_id')
@@ -109,8 +111,8 @@
                 console.error('Error inserting ingredient:', error);
             } else {
                 console.log('Inserted ingredient:', data);
-            }
-        }
+           }
+      }
 
         alert('Recipe ingredients submitted successfully!');
         
@@ -120,30 +122,35 @@
         
         goto('/member_submissions/completed_member_submissions');
 
-    } catch (error) {
+        } catch (error) {
         console.error('Error submitting recipe ingredients:', error);
         alert('There was an error submitting your recipe ingredients.');
+        }
     }
-}
 
 onMount(() => {
         fetchDietaryRequirements();
         fetchRecipeDietaryRequirements();
-});
+        });
 async function fetchDietaryRequirements() {
         const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
             .from('Dietary Requirements')
             .select('*');
-        console.log('Dietary Requirements fetched:', dietaryRequirementsData);
-
+        
         if (dietaryRequirementsError) {
             console.error('Error fetching dietary requirements:', dietaryRequirementsError);
         } else {
             dietaryRequirements = dietaryRequirementsData;
-            console.log('Dietary Requirements fetched:', dietaryRequirements); 
         }
+    }    
+    
+async function fetchRecipeDietaryRequirements() {
+        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+            .from('Recipe Dietary Requirements')
+            .select('*');
+       
     }
-    function toggleDietaryRequirement(dietaryRequirementId: number) {
+function toggleDietaryRequirement(dietaryRequirementId: number) {
         if (selectedDietaryRequirement.includes(dietaryRequirementId)) {
             selectedDietaryRequirement = selectedDietaryRequirement.filter(id => id !== dietaryRequirementId);
         } else {
@@ -151,14 +158,7 @@ async function fetchDietaryRequirements() {
         }
     }
     
-    async function fetchRecipeDietaryRequirements() {
-        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe Dietary Requirements')
-            .select('*');
-        console.log('Recipe Dietary Requirements fetched:', recipeDietaryRequirementsData);
-    }   
-    
-    async function addRecipeIngredientsData(event: MouseEvent) {
+async function addRecipeIngredientsData(event: MouseEvent) {
          try {
              const ingredient = recipeIngredients[0];
              const { data, error } = await supabaseClient
@@ -181,12 +181,12 @@ async function fetchDietaryRequirements() {
             ingredient.quantity = '';
             ingredient.unit = '';
         }
-    } catch (error) {
+        } catch (error) {
         console.error('Unexpected error:', error);
+        }
     }
-}
 async function addRecipeDietaryRequirementsData(event: MouseEvent) {
-    try {        
+        try {        
         if (!r_recipes_id) {
             throw new Error('Recipe ID is not set.');
         }        
@@ -211,6 +211,61 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
     } catch (error) {
         console.error('Unexpected error:', error);
         alert('There was an error submitting the dietary requirements.');
+    }
+    }
+
+    function handleFileChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        imageFile = target.files ? target.files[0] : null;
+    } 
+    
+  
+    async function uploadImage() {
+    if (!imageFile) {
+        alert("Please select an image file first.");
+        return;
+    }
+
+    const fileName = `${Date.now()}_${imageFile.name}`;
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('recipes_images')
+        .upload(fileName, imageFile);
+
+    if (uploadError) {
+        console.error('Error uploading image:', uploadError.message);
+        alert('Failed to upload image.');
+        return;
+    } else {
+        console.log('Image uploaded successfully:', uploadData);
+    }
+
+    // Get the public URL of the uploaded image
+    const { data: publicUrlData } = supabaseClient.storage
+        .from('recipes_images')
+        .getPublicUrl(fileName);
+
+    const publicURL = publicUrlData?.publicUrl;
+
+    if (!publicURL) {
+        console.error('Error getting public URL');
+        alert('Failed to get image URL.');
+        return;
+    }
+
+    console.log('Image public URL:', publicURL);
+
+    // Update the recipe with the image URL in the r_recipes_image field
+    const { data: updateData, error: updateError } = await supabaseClient
+        .from('Recipes')
+        .update({ r_recipes_image: publicURL })  // Update the image URL
+        .eq('r_recipes_id', r_recipes_id);       // Ensure you're updating the right recipe
+
+    if (updateError) {
+        console.error('Error updating recipe with image URL:', updateError.message);
+        alert('Failed to update recipe with image URL.');
+    } else {
+        console.log('Recipe updated with image URL:', updateData);
+        alert('Image uploaded and recipe updated successfully.');
     }
 }
 
@@ -311,13 +366,26 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
                     </div>
                 </td>
             </tr>
-        </tbody>
-    </table>
+            <tr>
+                <td><label for="r_recipes_image">Upload Image (Optional):</label></td>
+                <td>                  
+                  <label for="r_recipes_image" class="custom-file-upload">Choose File</label>
+                  <input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange} />
+                  <div class="button-container">            
+                  <button id="cr" type="button" on:click={uploadImage}>Upload Image</button>
+                  <button id="cr" type="button" on:submit={uploadImage}>Image</button>
+                  </div>
+                </td>
+              </tr>                
+            </tbody>
+        </table>
     
     <p>Click ADD INGREDIENTS until you have entered all ingredients. When you're happy with your recipe, press SUBMIT RECIPE.</p>
-    <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>
-    <button type="button" on:click={addRecipeIngredientsData}>ADD INGREDIENTS</button>              
-    <button type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
-    <button type="button" on:click={() => goto('/member_submissions/')}>CANCEL</button>        
+    <div class="button-container">
+    <button id="cr" type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>               
+    <button id="cr" type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
+    <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>GO BACK</button>  
+    <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
+    </div>     
 </form>
 

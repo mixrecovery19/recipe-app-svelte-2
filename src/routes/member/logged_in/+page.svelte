@@ -7,12 +7,10 @@
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const supabaseClient = createClient(supabaseURL, supabaseAnonKey);
 
-    let email = '';
-    let password = '';
+    let email = '';   
     let loginError = '';
     let successMessage = '';
     let userId = '';  
-
     let showMemberForm = false;    
     let m_member_first_name = '';
     let m_member_last_name = '';
@@ -103,7 +101,7 @@
 </script>
 
 <main>
-    <h1>Logged In Members</h1>
+    <h1 class="heading">Logged In Members</h1>
     
     <button id="cr" type="button" on:click={() => goto('/recipes')}>SEARCH RECIPES</button>
     <button id="cr" on:click={navigateToMemberSubmissions}>MEMBER SUBMISSIONS</button>
@@ -174,20 +172,3 @@
     {/if}
 </main>
 
-<style>
-    main {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-    }
-    input {
-        margin: 0.5rem;
-        padding: 0.5rem;
-        width: 100%;
-    }
-    button {
-        margin: 1rem;
-    }
-</style>
