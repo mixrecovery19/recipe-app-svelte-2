@@ -23,7 +23,10 @@
         let selectedCategory: number | null = null; 
         let selectedDietaryRequirement: number[] = [];
         let dietaryRequirements: any[] = [];
-        let imageFile: File | null = null;          
+        let imageFile: File | null = null; 
+        let recipeDietaryRequirements: any[] = [];
+        let recipeIngredientsData: any[] = [];
+        let publicURL = '';         
 
     onMount(async () => {
 
@@ -217,25 +220,54 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
     } 
     
   
-  async function uploadImage() {
+    async function uploadImage() {
     if (!imageFile) {
-      alert("Please select an image file first.");
-      return;
+        alert("Please select an image file first.");
+        return;
     }
 
-    const fileName = `${Date.now()}_${imageFile.name}`; 
-    const { data, error } = await supabaseClient.storage
-      .from('recipes_images') 
-      .upload(fileName, imageFile);
+    const fileName = `${Date.now()}_${imageFile.name}`;
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('recipes_images')
+        .upload(fileName, imageFile);
 
-    if (error) {
-      console.error('Error uploading image:', error.message);
-      alert('Failed to upload image.');
+    if (uploadError) {
+        console.error('Error uploading image:', uploadError.message);
+        alert('Failed to upload image.');
+        return;
     } else {
-      console.log('Image uploaded successfully:', data);
-      alert('Image uploaded successfully.');
+        console.log('Image uploaded successfully:', uploadData);
     }
-  }
+
+    // Get the public URL of the uploaded image
+    const { data: publicUrlData } = supabaseClient.storage
+        .from('recipes_images')
+        .getPublicUrl(fileName);
+
+    const publicURL = publicUrlData?.publicUrl;
+
+    if (!publicURL) {
+        console.error('Error getting public URL');
+        alert('Failed to get image URL.');
+        return;
+    }
+
+    console.log('Image public URL:', publicURL);
+
+    // Update the recipe with the image URL in the r_recipes_image field
+    const { data: updateData, error: updateError } = await supabaseClient
+        .from('Recipes')
+        .update({ r_recipes_image: publicURL })  // Update the image URL
+        .eq('r_recipes_id', r_recipes_id);       // Ensure you're updating the right recipe
+
+    if (updateError) {
+        console.error('Error updating recipe with image URL:', updateError.message);
+        alert('Failed to update recipe with image URL.');
+    } else {
+        console.log('Recipe updated with image URL:', updateData);
+        alert('Image uploaded and recipe updated successfully.');
+    }
+}
 
 </script>      
 

@@ -87,15 +87,13 @@
     };
 </script>
 
-<main>
-    
+<main>    
     <h1 class="heading">Sign Up</h1>
 
     <div>
         <label for="email">Email:</label>
         <input type="email" id="email" bind:value={email} placeholder="Enter your email" />
     </div>
-
     <div>
         <label for="password">Password:</label>
         <input type="password" id="password" bind:value={password} placeholder="Enter your password" />
@@ -107,10 +105,9 @@
     <div class="button-container">
         <button id="cr" on:click={signUp}>Sign Up</button>
         <button id="cr" on:click={login}>Login</button>
-        <button id="cr" on:click={logout}>Logout</button>      
+        <button id="cr" on:click={logout}>Logout</button>   
+    </div>    
         
-    </div>  
-    
     {#if loginError}
         <p style="color: red;">{loginError}</p>
     {/if}

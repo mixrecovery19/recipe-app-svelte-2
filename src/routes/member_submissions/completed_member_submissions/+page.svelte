@@ -97,9 +97,9 @@
 </script>
 
 <header class="center-button">    
-    <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
+    <button id="cr" type="button" on:click={() => goto('/member_submissions')}>ANOTHER SUBMISSION</button>    
     <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
-    <button id="cr" type="button" on:click={() => goto('/recipes/')}>SEARCH RECIPES</button>
+    <button id="cr" type="button" on:click={() => goto('/recipes')}>SEARCH RECIPES</button>
 </header>
 
 <h1 class="heading">Recipe Details</h1>
@@ -110,7 +110,7 @@
 
         {#if recipe.r_recipes_image}
         <img 
-            src={`/images/${recipe.r_recipes_image}`} 
+            src={`${recipe.r_recipes_image}`} 
             alt={recipe.r_recipes_title} 
             style="max-width: 100%; height: auto;" 
         />
