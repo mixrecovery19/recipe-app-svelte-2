@@ -7,12 +7,10 @@
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const supabaseClient = createClient(supabaseURL, supabaseAnonKey);
 
-    let email = '';
-    let password = '';
+    let email = '';   
     let loginError = '';
     let successMessage = '';
     let userId = '';  
-
     let showMemberForm = false;    
     let m_member_first_name = '';
     let m_member_last_name = '';

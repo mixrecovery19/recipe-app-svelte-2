@@ -2,11 +2,11 @@
     import { createClient } from '@supabase/supabase-js';
     import { goto } from '$app/navigation';
     import '../app.postcss';
-
+    
     const supabaseURL = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const supabaseClient = createClient(supabaseURL, supabaseAnonKey);
-
+    
     let email = '';
     let password = '';
     let loginError = '';
@@ -89,7 +89,7 @@
 
 <main>
     
-    <h1>Sign Up</h1>
+    <h1 class="heading">Sign Up</h1>
 
     <div>
         <label for="email">Email:</label>
@@ -100,18 +100,17 @@
         <label for="password">Password:</label>
         <input type="password" id="password" bind:value={password} placeholder="Enter your password" />
     </div>
-
     <div>
         <label for="username">Username:</label>
         <input type="text" id="username" bind:value={username} placeholder="Choose a username" />
     </div>
-
-    <button id="cr" on:click={signUp}>Sign Up</button>
-
-    <button id="cr" on:click={login}>Login</button>
-
-    <button id="cr" on:click={logout}>Logout</button>
-
+    <div class="button-container">
+        <button id="cr" on:click={signUp}>Sign Up</button>
+        <button id="cr" on:click={login}>Login</button>
+        <button id="cr" on:click={logout}>Logout</button>      
+        
+    </div>  
+    
     {#if loginError}
         <p style="color: red;">{loginError}</p>
     {/if}
@@ -121,20 +120,3 @@
     {/if}
 </main>
 
-<style>
-    main {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-    }
-    input {
-        margin: 0.5rem;
-        padding: 0.5rem;
-        width: 100%;
-    }
-    button {
-        margin: 1rem;
-    }
-</style>

@@ -2,16 +2,15 @@
     import { onMount } from "svelte";
     import { createClient } from '@supabase/supabase-js';
     import '../../../app.postcss';
-    import { goto } from '$app/navigation';    
-
+    import { goto } from '$app/navigation';       
+    
     const supabaseURL = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const supabaseClient = createClient(supabaseURL, supabaseAnonKey);
 
     let recipe_id: number = 0;
     let recipe: any = null;
-    let recipeIngredients: any[] = [];
-    let dietaryRequirements: any[] = []; 
+    let recipeIngredients: any[] = [];    
     let selectedDietaryRequirementsData: any[] = [];
 
     onMount(async () => {    
@@ -48,8 +47,7 @@
             recipe = recipeData;
             console.log('Recipe:', recipe);
         }    
-       
-        
+               
         const { data: ingredientsData, error: ingredientsError } = await supabaseClient
             .from('recipe_ingredients')
             .select('*')
@@ -67,37 +65,38 @@
         }        
         await fetchRecipeDietaryRequirements();
     });
-    
     async function fetchRecipeDietaryRequirements() {        
-        const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
-            .from('Recipe Dietary Requirements')
-            .select('dr_dietary_requirements_id')
-            .eq('r_recipes_id', recipe_id);
+    const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
+        .from('Recipe Dietary Requirements')
+        .select('dr_dietary_requirements_id')
+        .eq('r_recipes_id', recipe_id);
+    
+    if (recipeDietaryRequirementsError) {
+        console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
+    } else if (recipeDietaryRequirementsData.length > 0) {
+        const dietaryRequirementIds = recipeDietaryRequirementsData.map(item => item.dr_dietary_requirements_id);
+        console.log('Dietary Requirement IDs for this recipe:', dietaryRequirementIds);
         
-        if (recipeDietaryRequirementsError) {
-            console.error('Error fetching recipe dietary requirements:', recipeDietaryRequirementsError);
-        } else if (recipeDietaryRequirementsData.length > 0) {
-            const dietaryRequirementIds = recipeDietaryRequirementsData.map(item => item.dr_dietary_requirements_id);
-            console.log('Dietary Requirement IDs for this recipe:', dietaryRequirementIds);
-            
-            const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
-                .from('Dietary Requirements')
-                .select('dr_dietary_requirements_name')
-                .in('dr_dietary_requirements_id', dietaryRequirementIds);
+        const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
+            .from('Dietary Requirements')
+            .select('dr_dietary_requirements_name')
+            .in('dr_dietary_requirements_id', dietaryRequirementIds);
 
-            if (dietaryRequirementsError) {
-                console.error('Error fetching dietary requirement names:', dietaryRequirementsError);
-            } else {
-                selectedDietaryRequirementsData = dietaryRequirementsData;
-                console.log('Dietary requirement names for this recipe:', selectedDietaryRequirementsData);
-            }
+        if (dietaryRequirementsError) {
+            console.error('Error fetching dietary requirement names:', dietaryRequirementsError);
         } else {
-            console.log('No dietary requirements associated with this recipe.');
+            selectedDietaryRequirementsData = dietaryRequirementsData;
+            console.log('Dietary requirement names for this recipe:', selectedDietaryRequirementsData);
         }
+    } else {
+        console.log('No dietary requirements associated with this recipe.');
     }
+}
+    
+    
 </script>
 
-<header>    
+<header class="center-button">    
     <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>ANOTHER SUBMISSION</button>    
     <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
     <button id="cr" type="button" on:click={() => goto('/recipes/')}>SEARCH RECIPES</button>

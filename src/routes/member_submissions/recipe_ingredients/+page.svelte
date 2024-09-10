@@ -23,8 +23,7 @@
         let selectedCategory: number | null = null; 
         let selectedDietaryRequirement: number[] = [];
         let dietaryRequirements: any[] = [];
-        let imageFile: File | null = null;
-          
+        let imageFile: File | null = null;          
 
     onMount(async () => {
 
@@ -77,7 +76,7 @@
     });    
 
     async function handleRecipeSubmission() {
-    try {        
+        try {        
         const { data: recentRecipeData, error: recentRecipeError } = await supabaseClient
             .from('Recipes')
             .select('r_recipes_id')
@@ -109,8 +108,8 @@
                 console.error('Error inserting ingredient:', error);
             } else {
                 console.log('Inserted ingredient:', data);
-            }
-        }
+           }
+      }
 
         alert('Recipe ingredients submitted successfully!');
         
@@ -120,16 +119,16 @@
         
         goto('/member_submissions/completed_member_submissions');
 
-    } catch (error) {
+        } catch (error) {
         console.error('Error submitting recipe ingredients:', error);
         alert('There was an error submitting your recipe ingredients.');
+        }
     }
-}
 
 onMount(() => {
         fetchDietaryRequirements();
         fetchRecipeDietaryRequirements();
-});
+        });
 async function fetchDietaryRequirements() {
         const { data: dietaryRequirementsData, error: dietaryRequirementsError } = await supabaseClient
             .from('Dietary Requirements')
@@ -142,13 +141,13 @@ async function fetchDietaryRequirements() {
         }
     }    
     
-    async function fetchRecipeDietaryRequirements() {
+async function fetchRecipeDietaryRequirements() {
         const { data: recipeDietaryRequirementsData, error: recipeDietaryRequirementsError } = await supabaseClient
             .from('Recipe Dietary Requirements')
             .select('*');
        
     }
-    function toggleDietaryRequirement(dietaryRequirementId: number) {
+function toggleDietaryRequirement(dietaryRequirementId: number) {
         if (selectedDietaryRequirement.includes(dietaryRequirementId)) {
             selectedDietaryRequirement = selectedDietaryRequirement.filter(id => id !== dietaryRequirementId);
         } else {
@@ -156,7 +155,7 @@ async function fetchDietaryRequirements() {
         }
     }
     
-    async function addRecipeIngredientsData(event: MouseEvent) {
+async function addRecipeIngredientsData(event: MouseEvent) {
          try {
              const ingredient = recipeIngredients[0];
              const { data, error } = await supabaseClient
@@ -179,12 +178,12 @@ async function fetchDietaryRequirements() {
             ingredient.quantity = '';
             ingredient.unit = '';
         }
-    } catch (error) {
+        } catch (error) {
         console.error('Unexpected error:', error);
+        }
     }
-}
 async function addRecipeDietaryRequirementsData(event: MouseEvent) {
-    try {        
+        try {        
         if (!r_recipes_id) {
             throw new Error('Recipe ID is not set.');
         }        
@@ -210,18 +209,13 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
         console.error('Unexpected error:', error);
         alert('There was an error submitting the dietary requirements.');
     }
-}
+    }
 
     function handleFileChange(event: Event) {
         const target = event.target as HTMLInputElement;
         imageFile = target.files ? target.files[0] : null;
     } 
-    function handleFileInput(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-      imageFile = target.files[0]; 
-    }
-  }
+    
   
   async function uploadImage() {
     if (!imageFile) {
@@ -342,17 +336,24 @@ async function addRecipeDietaryRequirementsData(event: MouseEvent) {
             </tr>
             <tr>
                 <td><label for="r_recipes_image">Upload Image (Optional):</label></td>
-                <td><input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange}></td>
-                <button type="button" on:click={uploadImage}>Upload Image</button>
-                <button type="button" on:submit={uploadImage}>Image</button>          
-            </tr>
-        </tbody>
-    </table>
+                <td>                  
+                  <label for="r_recipes_image" class="custom-file-upload">Choose File</label>
+                  <input type="file" id="r_recipes_image" accept="image/*" on:change={handleFileChange} />
+                  <div class="button-container">            
+                  <button id="cr" type="button" on:click={uploadImage}>Upload Image</button>
+                  <button id="cr" type="button" on:submit={uploadImage}>Image</button>
+                  </div>
+                </td>
+              </tr>                
+            </tbody>
+        </table>
     
     <p>Click ADD INGREDIENTS until you have entered all ingredients. When you're happy with your recipe, press SUBMIT RECIPE.</p>
-    <button type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>               
-    <button type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
-    <button type="button" on:click={() => goto('/member_submissions/')}>GO BACK</button>  
-    <button tyoe="button" on:click={() => goto('/member/logged_in')}>HOME</button>      
+    <div class="button-container">
+    <button id="cr" type="button" on:click={addRecipeDietaryRequirementsData}>ADD DIETARY REQUIREMENTS</button>               
+    <button id="cr" type="button" on:click={handleRecipeSubmission}>SUBMIT RECIPE</button>
+    <button id="cr" type="button" on:click={() => goto('/member_submissions/')}>GO BACK</button>  
+    <button id="cr" type="button" on:click={() => goto('/member/logged_in')}>HOME</button> 
+    </div>     
 </form>
 

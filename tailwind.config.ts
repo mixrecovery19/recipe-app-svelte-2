@@ -5,6 +5,7 @@ import typography from '@tailwindcss/typography';
 import { skeleton } from '@skeletonlabs/tw-plugin';
 
 
+
 const config: Config = {
   darkMode: 'class',
   content: [
